@@ -1,45 +1,90 @@
-// IIFE - Immediate Invoked Function Expression
+/// <reference path="_references.ts"/>
+// IIFE - Immediate Invoked Fucntion Expression
 /*
     Closure
-    Calls an anonympous self-executing Function
+    Calls an anonympous self-executing function
     Anything in braces is in a closure. Won't go to global namespace.
 */
+(function() {
 
-(function(){
+    // Global Game Variables
+    let canvas = document.getElementById("canvas");
+    let stage:createjs.Stage;
 
-  // Global Game Variables
-  let canvas = document.getElementById("canvas");
-  let stage:createjs.Stage;
-  let helloLabel:objects.Label;
+    let assetManager: createjs.LoadQueue;
+    let assetManifest: any[];                         // Basically a "struct". Placeholder for now.\
 
-  function Init():void{
-    console.log("Initialization start");
+    let currentScene: objects.Scene;
+    let currentState:number;
 
-    Start();
-  }
+    assetManifest = [                               // Array of objects. Key-value pairs
+        {id: "startButton", src:"./Assets/Images/StartButton.png"},
+        {id: "nextButton", src:"./Assets/Images/NextButton.png"},
+        {id: "backButton", src:"./Assets/Images/BackButton.png"},
+        {id: "background", src:"./Assets/Images/SeamlessBG.png"},
+        {id: "player", src:"./Assets/Images/Spaceship.png"},
+        {id: "enemy", src:"./Assets/Images/Enemy.png"}
+    ];
 
-  function Start():void{
-    console.log("Starting Application...");
+    function Init():void {
+        console.log("Initialization start");
 
-    // Initialize createjs
-    stage = new createjs.Stage(canvas);
-    createjs.Ticker.framerate = 60; // 60 FPS
-    createjs.Ticker.on("tick", Update);
-    Main();
-  }
+        assetManager = new createjs.LoadQueue();    // Creates the container used for the queue.
+        assetManager.installPlugin(createjs.Sound); // Necessary to use sounds in our game.
+        assetManager.loadManifest(assetManifest);   // Loads the manifest defined above
+        assetManager.on("complete", Start, this);   // Calls the start function when the assetManager is loaded
 
-  function Update():void{
-    stage.update();
-  }
+        // Start();
+    }
 
-  function Main():void{
-    console.log("Game Start...");
+    function Start():void {
+        console.log("Starting Application...");
 
-    helloLabel = new objects.Label("Hello World!", "40px", "Consolas", "#000000", 320, 240, true);
+        // Initialize CreateJS
+        stage = new createjs.Stage(canvas);
+        stage.enableMouseOver(20);      // Frequency of checks. Computationally expensive function. Checks every frame for every image. In menu, turn on. In game, turn off.
+        createjs.Ticker.framerate = 60; // 60 FPS
+        createjs.Ticker.on("tick", Update);
 
-    stage.addChild(helloLabel);
-  }
+        objects.Game.stage = stage;
+        objects.Game.currentScene = config.Scene.START;
+        currentState = config.Scene.START;
+        Main();
+    }
 
-  window.onload = Init;
+    function Update():void {
+        if(currentState != objects.Game.currentScene) {
+            console.log(objects.Game.currentScene);
+            Main();
+        }
 
+        currentScene.Update();
+
+        stage.update();
+    }
+
+    function Main():void {
+        switch(objects.Game.currentScene) {
+            case config.Scene.START:
+            stage.removeAllChildren();
+            currentScene = new scenes.StartScene(assetManager);
+            stage.addChild(currentScene);
+            break;
+            case config.Scene.GAME:
+            stage.removeAllChildren();
+            currentScene = new scenes.PlayScene(assetManager);
+            stage.addChild(currentScene);
+            break;
+            case config.Scene.OVER:
+            stage.removeAllChildren();
+            currentScene = new scenes.GameOverScene(assetManager);
+            stage.addChild(currentScene);
+            break;
+        }
+        currentState = objects.Game.currentScene;
+        stage.addChild(currentScene);
+    }
+
+
+    window.onload = Init;
 })();

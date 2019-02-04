@@ -17,11 +17,11 @@ var objects;
         __extends(Label, _super);
         // Variables
         // Constructor
-        function Label(labelString, fontSize, fontFamily, fontColor, x, y, isCentered) {
+        function Label(labelString, fontSize, fontFamily, fontColour, x, y, isCentered) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
             if (isCentered === void 0) { isCentered = false; }
-            var _this = _super.call(this, labelString, fontSize + " " + fontFamily, fontColor) || this;
+            var _this = _super.call(this, labelString, fontSize + " " + fontFamily, fontColour) || this;
             if (isCentered) {
                 _this.regX = _this.getMeasuredWidth() * 0.5;
                 _this.regY = _this.getMeasuredHeight() * 0.5;
